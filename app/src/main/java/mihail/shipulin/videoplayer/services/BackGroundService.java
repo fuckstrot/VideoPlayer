@@ -10,7 +10,6 @@ import android.os.Message;
 import android.os.Process;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
@@ -19,10 +18,11 @@ public class BackGroundService extends Service {
     private static final String TAG = "BackGroundService";
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
+    RequestQueue httpRequestQueue;
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
-        RequestQueue queue = Volley.newRequestQueue(this);
+
         String url ="http://www.google.com";
         public ServiceHandler(Looper looper) {
             super(looper);
@@ -37,7 +37,8 @@ public class BackGroundService extends Service {
             while (true) {
                 synchronized (this) {
                     try {
-                        wait(endTime - System.currentTimeMillis());
+                        wait(5000);
+                        Log.i(TAG, "tick "+System.currentTimeMillis());
                     } catch (Exception e) {
                     }
                 }
@@ -55,6 +56,7 @@ public class BackGroundService extends Service {
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
+        httpRequestQueue = Volley.newRequestQueue(this);
         HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
         // Get the HandlerThread's Looper and use it for our Handler
@@ -74,6 +76,7 @@ public class BackGroundService extends Service {
         // If we get killed, after returning from here, restart
         return START_STICKY;
     }
+
     @Override
     public void onDestroy() {
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
